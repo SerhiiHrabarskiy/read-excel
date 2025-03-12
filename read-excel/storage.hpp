@@ -39,6 +39,10 @@ protected:
 	virtual void onCell( size_t sheetIdx, size_t row, size_t column, double value ) = 0;
 	//! Handler of cell with formula.
 	virtual void onCell( size_t sheetIdx, const Formula & value ) = 0;
+	//! Handler of sheet header.
+	virtual void onHeader( size_t sheetIdx, const std::wstring & value ) = 0;
+	//! Handler of sheet footer.
+	virtual void onFooter( size_t sheetIdx, const std::wstring & value ) = 0;
 }; // struct IStorage
 
 struct EmptyStorage : public IStorage {
@@ -50,6 +54,8 @@ protected:
 	void onCell( size_t sheetIdx, size_t row, size_t column, const std::wstring & value ) override {}
 	void onCell( size_t sheetIdx, size_t row, size_t column, double value ) override {}
 	void onCell( size_t sheetIdx, const Formula & value ) override {}
+	void onHeader( size_t sheetIdx, const std::wstring & value ) override {}
+	void onFooter( size_t sheetIdx, const std::wstring & value ) override {}
 }; // struct EmptyStorage
 
 } /* namespace Excel */

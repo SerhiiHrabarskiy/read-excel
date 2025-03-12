@@ -68,6 +68,12 @@ public:
 	//! Handle FORMULA.
 	static void handleFORMULA( Record & record, Stream & stream, size_t sheetIdx,
 		IStorage & storage );
+
+	//! Handle HEADER.
+	static void handleHeader( Record & record, size_t sheetIdx, IStorage & storage );
+
+	//! Handle FOOTER.
+	static void handleFooter( Record & record, size_t sheetIdx, IStorage & storage );
 }; // class Parser
 
 inline void
@@ -243,6 +249,14 @@ Parser::loadSheet( size_t sheetIdx, const BoundSheet & boundSheet,
 				handleFORMULA( record, stream, sheetIdx, storage );
 				break;
 
+			case XL_HEADER:
+				handleHeader( record, sheetIdx, storage );
+				break;
+
+			case XL_FOOTER:
+				handleFooter( record, sheetIdx, storage );
+				break;
+
 			case XL_EOF :
 				return;
 
@@ -397,6 +411,26 @@ Parser::handleFORMULA( Record & record, Stream & stream, size_t sheetIdx, IStora
 	}
 
 	storage.onCell( sheetIdx, formula );
+}
+
+inline void
+Parser::handleHeader( Record & record, size_t sheetIdx, IStorage & storage )
+{
+	if ( record.length() > 0 )
+	{
+		auto header = loadString( record.dataStream(), record.borders() );
+		storage.onHeader( sheetIdx, header );
+	}
+}
+
+inline void
+Parser::handleFooter( Record & record, size_t sheetIdx, IStorage & storage )
+{
+	if ( record.length() > 0 )
+	{
+		auto footer = loadString( record.dataStream(), record.borders() );
+		storage.onFooter( sheetIdx, footer );
+	}
 }
 
 } /* namespace Excel */

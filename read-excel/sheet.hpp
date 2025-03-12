@@ -89,8 +89,20 @@ public:
 	template< typename Value >
 	void setCell( size_t row, size_t column, Value value );
 
+	//! Set Header.
+	void setHeader( const std::wstring & header );
+
+	//! Set Footer.
+	void setFooter( const std::wstring & footer );
+
 	//! \return Name of the sheet.
 	const std::wstring & sheetName() const;
+
+	//! \return Header of the sheet.
+	const std::wstring & sheetHeader() const;
+
+	//! \return Footer of the sheet.
+	const std::wstring & sheetFooter() const;
 
 private:
 	//! Init cell's table with given cell.
@@ -105,6 +117,10 @@ private:
 	size_t m_columnsCount;
 	//! Name of the sheet.
 	std::wstring m_name;
+	//! Header of the sheet.
+	std::wstring m_header;
+	//! Footer of the sheet.
+	std::wstring m_footer;
 }; // class Sheet
 
 //
@@ -176,10 +192,34 @@ Sheet::setCell( size_t row, size_t column, Value value )
 	m_cells[ row ][ column ].setData( value );
 }
 
+inline void
+Sheet::setHeader( const std::wstring & header )
+{
+	m_header = header;
+}
+
+inline void
+Sheet::setFooter( const std::wstring & footer )
+{
+	m_footer = footer;
+}
+
 inline const std::wstring &
 Sheet::sheetName() const
 {
 	return m_name;
+}
+
+inline const std::wstring &
+Sheet::sheetHeader() const
+{
+	return m_header;
+}
+
+inline const std::wstring &
+Sheet::sheetFooter() const
+{
+	return m_footer;
 }
 
 inline void

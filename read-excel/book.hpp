@@ -60,6 +60,8 @@ protected:
 	void onCell( size_t sheetIdx, size_t row, size_t column, const std::wstring & value ) override;
 	void onCell( size_t sheetIdx, size_t row, size_t column, double value ) override;
 	void onCell( size_t sheetIdx, const Formula & value ) override;
+	void onHeader( size_t sheetIdx, const std::wstring & value ) override;
+	void onFooter( size_t sheetIdx, const std::wstring & value ) override;
 
 public:
 	//! \return Date mode.
@@ -170,6 +172,18 @@ inline void
 Book::onCell( size_t sheetIdx, const Formula & formula )
 {
 	sheet( sheetIdx )->setCell( formula.getRow(), formula.getColumn(), formula );
+}
+
+inline void
+Book::onHeader(size_t sheetIdx, const std::wstring & value)
+{
+	sheet( sheetIdx )->setHeader( value );
+}
+
+inline void
+Book::onFooter(size_t sheetIdx, const std::wstring & value)
+{
+	sheet( sheetIdx )->setFooter( value );
 }
 
 inline size_t
