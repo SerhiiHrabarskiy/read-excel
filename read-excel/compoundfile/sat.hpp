@@ -1,21 +1,20 @@
 
 /*
-	SPDX-FileCopyrightText: 2011-2024 Igor Mironchik <igor.mironchik@gmail.com>
-	SPDX-License-Identifier: MIT
+        SPDX-FileCopyrightText: 2011-2024 Igor Mironchik
+   <igor.mironchik@gmail.com> SPDX-License-Identifier: MIT
 */
 
 #ifndef COMPOUNDFILE__SAT_HPP__INCLUDED
 #define COMPOUNDFILE__SAT_HPP__INCLUDED
 
 // C++ include.
-#include <vector>
 #include <cstdint>
-#include <string>
 #include <sstream>
+#include <string>
+#include <vector>
 
 // CompoundFile include.
 #include "compoundfile_exceptions.hpp"
-
 
 namespace CompoundFile {
 
@@ -26,29 +25,28 @@ namespace CompoundFile {
 //! Sector identifier.
 class SecID {
 public:
-	enum Ids {
-		//! Free sector identifier.
-		FreeSecID = -1,
-		//! End of chain of sectors identifier.
-		EndOfChain = -2,
-		//! SAT sector identifier.
-		SATSecID = -3,
-		//! MSAT sector identifier.
-		MSATSecID = -4
-	}; // enum Ids
+  enum Ids {
+    //! Free sector identifier.
+    FreeSecID = -1,
+    //! End of chain of sectors identifier.
+    EndOfChain = -2,
+    //! SAT sector identifier.
+    SATSecID = -3,
+    //! MSAT sector identifier.
+    MSATSecID = -4
+  }; // enum Ids
 
 public:
-	SecID();
-	SecID( int32_t id );
+  SecID();
+  SecID(int32_t id);
 
-	//! Convert SecID into integral value.
-	operator int32_t () const;
+  //! Convert SecID into integral value.
+  operator int32_t() const;
 
 private:
-	//! Integral sector identifier.
-	int32_t m_id;
+  //! Integral sector identifier.
+  int32_t m_id;
 }; // class SecID
-
 
 //
 // SAT
@@ -57,64 +55,40 @@ private:
 //! Sector allocation table.
 class SAT {
 public:
-	SAT();
-	explicit SAT( const std::vector< SecID > & sat );
+  SAT();
+  explicit SAT(const std::vector<SecID> &sat);
 
-	//! \return Sector allocation table.
-	const std::vector< SecID > & sat() const;
+  //! \return Sector allocation table.
+  const std::vector<SecID> &sat() const;
 
-	//! \return Chain of sectors for the given stream in the right order.
-	std::vector< SecID > sectors( const SecID & firstSector ) const;
+  //! \return Chain of sectors for the given stream in the right order.
+  std::vector<SecID> sectors(const SecID &firstSector) const;
 
 private:
-	//! SAT.
-	std::vector< SecID > m_sat;
+  //! SAT.
+  std::vector<SecID> m_sat;
 }; // class SAT
-
 
 //
 // SecID
 //
 
-inline
-SecID::SecID()
-	:	m_id( EndOfChain )
-{}
+inline SecID::SecID() : m_id(EndOfChain) {}
 
-inline
-SecID::SecID( int32_t id )
-	:	m_id( id )
-{
-}
+inline SecID::SecID(int32_t id) : m_id(id) {}
 
-inline
-SecID::operator int32_t () const
-{
-	return m_id;
-}
-
+inline SecID::operator int32_t() const { return m_id; }
 
 //
 // SAT
 //
 
-inline
-SAT::SAT()
-{
-}
+inline SAT::SAT() {}
 
-inline
-SAT::SAT( const std::vector< SecID > & sat )
-	:	m_sat( sat )
-{
-}
+inline SAT::SAT(const std::vector<SecID> &sat) : m_sat(sat) {}
 
-inline const std::vector< SecID > &
-SAT::sat() const
-{
-	return m_sat;
-}
-
+inline const std::vector<SecID> &SAT::sat() const { return m_sat; }
+#if 0
 inline std::vector< SecID >
 SAT::sectors( const SecID & firstSector ) const
 {
@@ -134,6 +108,8 @@ SAT::sectors( const SecID & firstSector ) const
 				break;
 
 			id = m_sat.at( id );
+			if ( id == 0 )
+				break;
 		}
 
 		return result;
@@ -146,7 +122,42 @@ SAT::sectors( const SecID & firstSector ) const
 		throw Exception( stream.str() );
 	}
 }
+#else
+inline std::vector<SecID> SAT::sectors(const SecID &firstSector) const {
+  const auto satSize = static_cast<int32_t>(m_sat.size());
 
+  // ---- Basic sanity checks ------------------------------------------------
+  if (firstSector < 0 || firstSector >= satSize)
+    throw Exception(L"Bad first sector id: " + std::to_wstring(firstSector));
+
+  std::vector<SecID> result;
+  result.reserve(satSize);            // Upper bound – avoids re-allocations
+  std::vector<bool> visited(satSize); // One bit per sector
+
+  SecID id = firstSector;
+  int hops = 0;
+
+  while (id != SecID::EndOfChain && id != SecID::FreeSecID) {
+    if (id < 0 || id >= satSize)
+      throw Exception(L"SAT chain points outside the table at id: " +
+                      std::to_wstring(id));
+
+    if (visited[id])
+      throw Exception(L"Cycle detected in SAT at sector: " +
+                      std::to_wstring(id));
+
+    visited[id] = true;
+    result.push_back(id);
+
+    id = m_sat[id]; // Next link
+    if (++hops > satSize)
+      throw Exception(L"SAT chain exceeds table length – corrupt file?");
+  }
+
+  return result; // Good chain – return the collected sectors
+}
+
+#endif
 } /* namespace CompoundFile */
 
 #endif // COMPOUNDFILE__SAT_HPP__INCLUDED
