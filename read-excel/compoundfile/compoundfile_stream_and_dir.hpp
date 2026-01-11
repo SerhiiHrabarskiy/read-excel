@@ -411,7 +411,7 @@ Stream::seekToNextSector()
 inline char
 Stream::getByte()
 {
-	if( m_bytesReaded > m_streamSize )
+	if( m_bytesReaded >= m_streamSize )
 		return 0xFFu;
 
 	if( m_sectorBytesReaded == m_sectorSize )
@@ -420,6 +420,9 @@ Stream::getByte()
 
 		seekToNextSector();
 	}
+
+	if( m_pos >= static_cast< int32_t >( m_buf.size() ) )
+		throw Exception( L"Stream position out of bounds - corrupted compound file" );
 
 	const auto ch = m_buf.at( m_pos );
 
