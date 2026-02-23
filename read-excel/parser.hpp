@@ -225,7 +225,12 @@ Parser::loadSheet( size_t sheetIdx, const BoundSheet & boundSheet,
 
 	while( true )
 	{
+		auto before = stream.pos();
 		Record record( stream );
+		auto after = stream.pos();
+
+		if (after == before)
+			throw Exception(L"Stream position did not advance while reading record.");
 
 		switch( record.code() )
 		{
@@ -439,4 +444,5 @@ Parser::handleFooter( Record & record, size_t sheetIdx, IStorage & storage )
 }
 
 } /* namespace Excel */
+
 
