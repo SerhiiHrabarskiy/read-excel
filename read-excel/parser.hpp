@@ -119,7 +119,12 @@ Parser::loadGlobals( std::vector< BoundSheet > & boundSheets,
 
 	while( true )
 	{
+		auto before = stream.pos();
 		Record r( stream );
+		auto after = stream.pos();
+
+		if (after == before)
+			throw Exception(L"Stream position did not advance while reading record.");
 
 		switch( r.code() )
 		{
@@ -434,3 +439,4 @@ Parser::handleFooter( Record & record, size_t sheetIdx, IStorage & storage )
 }
 
 } /* namespace Excel */
+
