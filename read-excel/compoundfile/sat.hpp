@@ -126,13 +126,15 @@ SAT::sectors( const SecID & firstSector ) const
 
 		SecID id = m_sat.at( firstSector );
 
-		while( true )
-		{
-			if( id >= 0 )
-				result.push_back( id );
-			else
-				break;
+		const size_t maxSteps = m_sat.size() + 1;
+		size_t steps = 0;
 
+		while(id >= 0)
+		{
+			if (++steps > maxSteps)
+				throw Exception(L"SAT chain too long (possible loop).");
+
+			result.push_back( id );
 			id = m_sat.at( id );
 		}
 
@@ -150,3 +152,4 @@ SAT::sectors( const SecID & firstSector ) const
 } /* namespace CompoundFile */
 
 #endif // COMPOUNDFILE__SAT_HPP__INCLUDED
+
